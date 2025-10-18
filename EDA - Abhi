@@ -1,0 +1,151 @@
+---
+title: "DATA2002 EDA"
+format: html
+editor: visual
+---
+
+```{r}
+library('tidyverse')
+abalone = read.csv('abalone.data', header = F)
+colnames(abalone) <- c(
+  "sex",
+  "length",
+  "diameter",
+  "height",
+  "whole_weight",
+  "shucked_weight",
+  "viscera_weight",
+  "shell_weight",
+  "rings"
+)
+```
+
+```{r}
+visdat::vis_miss(abalone)
+```
+
+```{r}
+
+table1::table1(
+  ~ length + diameter + height + whole_weight + 
+    shucked_weight + viscera_weight + shell_weight + rings | sex,
+  data = abalone,
+  overall = FALSE
+)
+```
+
+```{r}
+abalone |> drop_na()|> ggplot() +aes(y = sex, x = rings) + geom_boxplot()
+```
+
+```{r}
+abalone |>
+  select(-shell_weight) |>   # optional, keep if you want fewer panels
+  pivot_longer(
+    cols = c(whole_weight, shucked_weight, viscera_weight),
+    names_to = "variable",
+    values_to = "values"
+  ) |>
+  drop_na() |>
+  ggplot(aes(x = values, y = rings, colour = sex)) +
+  geom_point(alpha = 0.3) +
+  facet_grid(. ~ variable, scales = "free_x") +  # horizontally by weight variable
+  scale_colour_brewer(palette = "Set1") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Weight (grams)",
+    y = "Rings (age proxy)",
+    colour = "Sex",
+    title = "Relationship between Abalone Weight Variables and Age (Rings)"
+  )
+```
+
+```{r}
+abalone |>
+  pivot_longer(
+    cols = c(whole_weight, shucked_weight, viscera_weight),
+    names_to = "variable",
+    values_to = "values"
+  ) |>
+  drop_na() |>
+  ggplot(aes(x = values, y = rings, colour = sex)) +
+  geom_point(alpha = 0.15) +
+  geom_smooth(method = "lm", se = FALSE, colour = "black") +  # one line per facet
+  facet_grid(sex ~ variable, scales = "free_x") +             # 3×3 grid (sex × variable)
+  scale_colour_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(
+    legend.position = "none",   # each facet already shows sex
+    strip.text = element_text(size = 11, face = "bold")
+  ) +
+  labs(
+    x = "Weight (grams)",
+    y = "Rings (age proxy)",
+    title = "Abalone Weight Variables vs Rings by Sex"
+  )
+```
+
+```{r}
+#this is the histogram
+abalone |>
+  pivot_longer(
+    cols = c(height, diameter, whole_weight),
+    names_to = "variable", values_to = "val"
+  ) |>
+  drop_na(rings, sex, val) |>
+  ggplot(aes(x = rings)) +
+  geom_histogram(bins = 30, colour = "white") +
+  facet_grid(sex ~ variable) +
+  theme_minimal() +
+  labs(x = "Rings (age proxy)", y = "Count",
+       title = "Distribution of Rings by Sex and Variable")
+```
+
+```{r}
+abalone |>
+  ggplot(aes(x = rings)) + 
+  geom_histogram(bins = 30, colour = "white") + 
+  labs(x= "Rings", y = "Count")
+```
+
+```{r}
+abalone |>
+  pivot_longer(
+    cols = c(height, diameter, whole_weight),
+    names_to = "variable", values_to = "val"
+  ) |>
+  drop_na(val, sex) |>
+  ggplot(aes(x = val)) +
+  geom_histogram(bins = 30, colour = "white") +
+  facet_grid(sex ~ variable, scales = "free_x") +
+  theme_minimal() +
+  labs(x = "Value", y = "Count",
+       title = "Distributions of Height, Diameter, and Whole Weight by Sex")
+
+
+```
+
+```{r}
+library(ggplot2)
+ggplot(abalone, aes(x = rings, fill = sex)) +
+  geom_histogram(
+    bins = 30,           # number of bars
+    colour = "white",    # white borders for clarity
+    alpha = 0.6          # transparency
+  ) +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Rings (age proxy)",
+    y = "Count",
+    fill = "Sex",
+    title = "Distribution of Abalone Rings by Sex"
+  )
+```
+
+```{r}
+
+```
